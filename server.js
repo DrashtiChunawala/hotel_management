@@ -26,8 +26,8 @@ const logRequest = (req, res, next) => {
 };
 app.use(logRequest);
 
-app.use("/person",   personRoute);
-app.use("/menu",localAuthMiddleware, menuRoute);
+app.use("/person",  personRoute);
+app.use("/menu", menuRoute);
 
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
