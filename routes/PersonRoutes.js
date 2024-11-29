@@ -27,7 +27,36 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+//login the user
+router.post("/login", async (req, res) => {
+  try {
+    //extract the credentials from the user
+    const { username, password } = req.body;
+    //find user by username
+    const user = await Person.findOne({ username: username });
+    //if user not found or password not matched then return erro
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!user || !isPasswordCorrect) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    //generate a token for the user
+    const payload = {
+      username: user.username,
+      id: user.id,
+    };
+    console.log(payload);
+
+    const token = generateToken(payload);
+    console.log(token);
+    res.json({ token });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/",jwtAuthMiddleware, async (req, res) => {
   try {
     const user = await Person.find();
 
