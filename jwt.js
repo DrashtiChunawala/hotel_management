@@ -2,8 +2,12 @@ const jwt = require("jsonwebtoken");
 
 const jwtAuthMiddleware = (req, res, next) => {
   //extract the jwt token form the request headers
-  const token = req.headers.authorization.split(" ")[1];
-  if (!token || !token.startsWith("Bearer "))
+  const authorization = req.headers.authorization;
+  if(!authorization){
+    return res.status(401).json({ error: "Authorization header not provided" });
+  }
+  const token = authorization.split(" ")[1];  
+  if (!token)
     return res.status(401).json({ error: "Token not provided" });
 
   try {
@@ -30,7 +34,7 @@ const generateToken = (userData) => {
 
   console.log("Generating token for:", userData);
 
-  return jwt.sign(userData, jwtSecretKey);
+  return jwt.sign(userData, jwtSecretKey, { expiresIn: "30000" });
 };
 
 module.exports = { jwtAuthMiddleware, generateToken };

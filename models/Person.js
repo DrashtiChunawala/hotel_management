@@ -42,46 +42,45 @@ const personSchema = new mongoose.Schema({
 });
 
 //next is a cb function of mongoose to decrypt the password 
-personSchema.pre('save', async function(next) {
+personSchema.pre('save', async function (next) {
     const person = this;
 
-    //Hash the password only if it is new if it is old then no need to decrypt
-    if(!person.isModified('password')) return next();
+    if (!person.isModified('password')) {
+        console.log("Password not modified, skipping hashing.");
+        return next();
+    }
 
-    try{
-        //Hash the password logic
+    try {
+        console.log("Original Password:", person.password);
 
-        //hash password generation
-        const salt=await bcrypt.genSalt(10)
-        console.log('salt', salt)
-        //hash password
-        const hashedPassword=await bcrypt.hash(person.password,salt)
-        console.log(hashedPassword,"*****")
-        //override the plain password with the hashed one
+        const salt = await bcrypt.genSalt(10);
+        console.log("Generated Salt:", salt);
+
+        const hashedPassword = await bcrypt.hash(person.password, salt);
+        console.log("Hashed Password:", hashedPassword);
+
         person.password = hashedPassword;
+        console.log("Password successfully hashed.");
         next();
-    }catch(err){
+    } catch (err) {
+        console.error("Error during password hashing:", err);
         return next(err);
-    }   
-})
-
-personSchema.methods.comparePassword=async (candidatePassword)=>{
-    try{
-
-        //how compare works 
-        //abc-->dfdfdshfgs
-        //login->xyz
-
-        //dfdfdshfgs -->extract salt
-        //salt xyz-->sgdhasjgdjhasgd
+    }
+});
 
 
-        //use bcrypt to compare the provide password with the hashed password
-        const isMatched=await bcrypt.compare(candidatePassword,this.password);
-        return isMatched
-
-    }catch(err){
-        throw err;
+personSchema.methods.comparePassword = async function (candidatePassword){
+    try {
+        const isMatched = await bcrypt.compare(candidatePassword, this.password);
+        if (isMatched) {
+            console.log("Password is correct!");
+        } else {
+            console.log("Password is incorrect.");
+        }
+        return isMatched;
+    } catch (error) {
+        console.error("Error while comparing passwords:", error);
+        throw error;
     }
 }
 // Create Person model
